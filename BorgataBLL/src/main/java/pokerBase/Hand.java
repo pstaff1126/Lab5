@@ -3,49 +3,48 @@ package pokerBase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.UUID;
 
 import javax.xml.bind.annotation.XmlElement;
+
+import org.apache.commons.math3.util.CombinatoricsUtils;
 
 import domain.HandDomainModel;
 import domain.CardDomainModel;
 import enums.eCardNo;
 import enums.eHandStrength;
 import enums.eRank;
+import pokerEnums.eEvalType;
 
 public class Hand extends HandDomainModel {
 
 	private static Deck dNonWildDeck = new Deck();
-	
+
 	public Hand() {
 
 	}
-	
-	private Hand(ArrayList<Card> Cards)
-	{
+
+	private Hand(ArrayList<Card> Cards) {
 		ArrayList<CardDomainModel> cDM = new ArrayList<CardDomainModel>();
-		
-		for (Card c: Cards)
-		{
+
+		for (Card c : Cards) {
 			cDM.add(new Card(c.getSuit(), c.getRank(), c.getWild(), c.getCardNbr()));
 		}
 		this.setCardsInHand(cDM);
-		
+
 	}
 
-	public ArrayList<Card> getCardsInHand() {		
+	public ArrayList<Card> getCardsInHand() {
 		ArrayList<Card> CardsInHand = new ArrayList<Card>();
-		
-		for (CardDomainModel cDM: this.getCards())
-		{
+
+		for (CardDomainModel cDM : this.getCards()) {
 			Card c = new Card(cDM.getSuit(), cDM.getRank(), cDM.getWild(), cDM.getCardNbr());
 			CardsInHand.add(c);
-		}				
+		}
 		return CardsInHand;
 	}
-	
 
-	
 	public void AddCardToHand(Card c) {
 		if (this.getCards() == null) {
 			setCardsInHand(new ArrayList<CardDomainModel>());
@@ -63,6 +62,145 @@ public class Hand extends HandDomainModel {
 			Import.add(d.drawFromDeck());
 		}
 		setCardsInHand(Import);
+	}
+
+	public static ArrayList<Hand> ListHands(Hand PlayerHand, Hand CommonHand, eEvalType eEval) {
+
+		ArrayList<Hand> CombinHands = new ArrayList<Hand>();
+
+		switch (eEval) {
+		case Normal:
+			CombinHands.add(PlayerHand);
+			break;
+		case Omaha:
+
+			Iterator iterPlayer2 = CombinatoricsUtils.combinationsIterator(4, 2);
+			while (iterPlayer2.hasNext()) {
+				int[] iPlayerCardsToPick = (int[]) iterPlayer2.next();
+
+				Iterator iterCommon2 = CombinatoricsUtils.combinationsIterator(5, 3);
+				while (iterCommon2.hasNext()) {
+					int[] iCommonCardsToPick = (int[]) iterCommon2.next();
+					Hand h = new Hand();
+					h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[0]));
+					h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[1]));
+					
+					h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[0]));
+					h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[1]));
+					h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[2]));
+
+					CombinHands.add(h);
+				}
+			}
+			System.out.println("Size at case 1");
+			System.out.println(CombinHands.size());
+
+			break;
+
+		case TexasHoldEm:
+			ArrayList<Card> cards = new ArrayList<Card>();
+			// Player has 2 cards. To determine the combinations, we'll have to
+			// pull zero from player, then each card, then both cards
+			// the rest of the cards are going to come from the common cards.
+
+			for (int iPlayerCard = 1; iPlayerCard < 4; iPlayerCard++) {
+				switch (iPlayerCard) {
+				case 1:
+					// This means pull zero cards from player, all cards from
+					// community
+					Hand h1 = new Hand();
+					h1.AddCardToHand((Card) CommonHand.getCards().get(0));
+					h1.AddCardToHand((Card) CommonHand.getCards().get(1));
+					h1.AddCardToHand((Card) CommonHand.getCards().get(2));
+					h1.AddCardToHand((Card) CommonHand.getCards().get(3));
+					h1.AddCardToHand((Card) CommonHand.getCards().get(4));
+					CombinHands.add(h1);
+
+					System.out.println("Size at case 1");
+					System.out.println(CombinHands.size());
+					break;
+				case 2:
+					// This means pull first card from player, four cards from
+					// community
+
+					Iterator iterTexasHoldemPlayer = CombinatoricsUtils.combinationsIterator(2, 1);
+					while (iterTexasHoldemPlayer.hasNext()) {
+						int[] iPlayerCardsToPick = (int[]) iterTexasHoldemPlayer.next();
+
+						Iterator iterCommon2 = CombinatoricsUtils.combinationsIterator(5, 4);
+						while (iterCommon2.hasNext()) {
+							int[] iCommonCardsToPick = (int[]) iterCommon2.next();
+							Hand h = new Hand();
+							h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[0]));
+
+							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[0]));
+							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[1]));
+							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[2]));
+							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[3]));
+
+							CombinHands.add(h);
+						}
+					}
+
+					System.out.println("Size at case 2");
+					System.out.println(CombinHands.size());
+
+					break;
+				case 3:
+					// This means pull second card from player, four cards from
+					// community
+					// This means pull first card from player, four cards from
+					// community
+
+					Iterator iterPlayer3 = CombinatoricsUtils.combinationsIterator(2, 2);
+					Iterator iterCommon3 = CombinatoricsUtils.combinationsIterator(5, 3);
+
+					while (iterPlayer3.hasNext()) {
+						int[] iPlayerCardsToPick = (int[]) iterPlayer3.next();
+
+						while (iterCommon3.hasNext()) {
+							int[] iCommonCardsToPick = (int[]) iterCommon3.next();
+							Hand h = new Hand();
+							h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[0]));
+							h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[1]));
+
+							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[0]));
+							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[1]));
+							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[2]));
+
+							CombinHands.add(h);
+						}
+					}
+
+					System.out.println("Size at case 3");
+					System.out.println(CombinHands.size());
+				}
+			}
+			break;
+
+		case SevenCard:
+
+			Iterator iterSevenCard = CombinatoricsUtils.combinationsIterator(7, 5);
+			while (iterSevenCard.hasNext()) {
+				int[] iPlayerCardsToPick = (int[]) iterSevenCard.next();
+				Hand h = new Hand();
+
+				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[0]));
+				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[1]));
+				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[2]));
+				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[3]));
+				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[4]));
+				CombinHands.add(h);
+			}
+			break;
+		}
+
+		for (Hand h : CombinHands) {
+			h = Hand.EvalHand(h);
+		}
+
+		return CombinHands;
+
 	}
 
 	public static Hand EvalHand(ArrayList<CardDomainModel> SeededHand) {
@@ -124,8 +262,8 @@ public class Hand extends HandDomainModel {
 				for (CardDomainModel JokerSub : dNonWildDeck.getCards()) {
 					ArrayList<Card> SubCards = new ArrayList<Card>();
 					SubCards.add((Card) JokerSub); // Adds substitute card for
-											// Joker/wild. Will iterate through
-											// entire naural deck
+					// Joker/wild. Will iterate through
+					// entire naural deck
 
 					for (int a = 0; a < 5; a++) { // Adds original cards that
 													// are not wild/Jokers
@@ -144,7 +282,6 @@ public class Hand extends HandDomainModel {
 		return SubHands;
 	}
 
-	
 	public static Hand EvalHand(Hand h) {
 		ArrayList<Hand> EvalHands = ExplodeHands(h);
 
@@ -157,8 +294,19 @@ public class Hand extends HandDomainModel {
 		return EvalHands.get(0);
 
 	}
-	
-	
+
+	public static Hand PickBestHand(ArrayList<Hand> hands) {
+
+		for (Hand EvalHand : hands) {
+			EvalHand.EvalHand();
+		}
+
+		Collections.sort(hands, Hand.HandRank);
+
+		return hands.get(0);
+
+	}
+
 	private void EvalHand() {
 		// Evaluates if the hand is a flush and/or straight then figures out
 		// the hand's strength attributes
@@ -169,7 +317,7 @@ public class Hand extends HandDomainModel {
 		Collections.sort(getCardsInHand(), CardDomainModel.CardRank);
 
 		Collections.sort(getCards(), CardDomainModel.CardRank);
-		
+
 		// Ace Evaluation
 		if (getCards().get(eCardNo.FirstCard.getCardNo()).getRank() == eRank.ACE) {
 			setAce(true);
@@ -414,7 +562,7 @@ public class Hand extends HandDomainModel {
 	/**
 	 * Custom sort to figure the best hand in an array of hands
 	 */
-	
+
 	public static Comparator<Hand> HandRank = new Comparator<Hand>() {
 
 		public int compare(Hand h1, Hand h2) {
@@ -437,161 +585,112 @@ public class Hand extends HandDomainModel {
 				return result;
 			}
 
-			
-			if ((h2.getKicker() == null) || (h1.getKicker() == null))
-			{
+			if ((h2.getKicker() == null) || (h1.getKicker() == null)) {
 				return 0;
 			}
-			
 
-			try
-			{
-				if (h2.getKicker().size() >= eCardNo.FirstCard.getCardNo() +1 )
-				{
-					if (h1.getKicker().size() >= eCardNo.FirstCard.getCardNo() +1)
-					{
-						result = h2.getKicker().get(eCardNo.FirstCard.getCardNo()).getRank().getRank() - h1.getKicker().get(eCardNo.FirstCard.getCardNo()).getRank().getRank();
+			try {
+				if (h2.getKicker().size() >= eCardNo.FirstCard.getCardNo() + 1) {
+					if (h1.getKicker().size() >= eCardNo.FirstCard.getCardNo() + 1) {
+						result = h2.getKicker().get(eCardNo.FirstCard.getCardNo()).getRank().getRank()
+								- h1.getKicker().get(eCardNo.FirstCard.getCardNo()).getRank().getRank();
 					}
-					if (result != 0)
-					{
+					if (result != 0) {
 						return result;
 					}
-				}				
-			}
-			catch (Exception e)
-			{				
-				System.out.println(e.getMessage());
-				throw new RuntimeException(e);
-			}			
-
-			
-			try
-			{
-				if (h2.getKicker().size() >= eCardNo.SecondCard.getCardNo() +1 )
-				{
-					if (h1.getKicker().size() >= eCardNo.SecondCard.getCardNo() +1)
-					{
-						result = h2.getKicker().get(eCardNo.SecondCard.getCardNo()).getRank().getRank() - h1.getKicker().get(eCardNo.SecondCard.getCardNo()).getRank().getRank();
-					}
-					if (result != 0)
-					{
-						return result;
-					}
-				}				
-			}
-			catch (Exception e)
-			{
-				System.out.println(e.getMessage());
-				throw new RuntimeException(e);				
-			}			
-			
-			try
-			{
-				if (h2.getKicker().size() >= eCardNo.ThirdCard.getCardNo() +1 )
-				{
-					if (h1.getKicker().size() >= eCardNo.ThirdCard.getCardNo() +1)
-					{
-						result = h2.getKicker().get(eCardNo.ThirdCard.getCardNo()).getRank().getRank() - h1.getKicker().get(eCardNo.ThirdCard.getCardNo()).getRank().getRank();
-					}
-					if (result != 0)
-					{
-						return result;
-					}
-				}				
-			}
-			catch (Exception e)
-			{
+				}
+			} catch (Exception e) {
 				System.out.println(e.getMessage());
 				throw new RuntimeException(e);
 			}
-			
-			try
-			{
-				if (h2.getKicker().size() >= eCardNo.FourthCard.getCardNo() +1 )
-				{
-					if (h1.getKicker().size() >= eCardNo.FourthCard.getCardNo() +1)
-					{
-						result = h2.getKicker().get(eCardNo.FourthCard.getCardNo()).getRank().getRank() - h1.getKicker().get(eCardNo.FourthCard.getCardNo()).getRank().getRank();
+
+			try {
+				if (h2.getKicker().size() >= eCardNo.SecondCard.getCardNo() + 1) {
+					if (h1.getKicker().size() >= eCardNo.SecondCard.getCardNo() + 1) {
+						result = h2.getKicker().get(eCardNo.SecondCard.getCardNo()).getRank().getRank()
+								- h1.getKicker().get(eCardNo.SecondCard.getCardNo()).getRank().getRank();
 					}
-					if (result != 0)
-					{
+					if (result != 0) {
 						return result;
 					}
-				}				
-			}
-			catch (Exception e)
-			{
+				}
+			} catch (Exception e) {
 				System.out.println(e.getMessage());
-				throw new RuntimeException(e);				
+				throw new RuntimeException(e);
 			}
-			
+
+			try {
+				if (h2.getKicker().size() >= eCardNo.ThirdCard.getCardNo() + 1) {
+					if (h1.getKicker().size() >= eCardNo.ThirdCard.getCardNo() + 1) {
+						result = h2.getKicker().get(eCardNo.ThirdCard.getCardNo()).getRank().getRank()
+								- h1.getKicker().get(eCardNo.ThirdCard.getCardNo()).getRank().getRank();
+					}
+					if (result != 0) {
+						return result;
+					}
+				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				throw new RuntimeException(e);
+			}
+
+			try {
+				if (h2.getKicker().size() >= eCardNo.FourthCard.getCardNo() + 1) {
+					if (h1.getKicker().size() >= eCardNo.FourthCard.getCardNo() + 1) {
+						result = h2.getKicker().get(eCardNo.FourthCard.getCardNo()).getRank().getRank()
+								- h1.getKicker().get(eCardNo.FourthCard.getCardNo()).getRank().getRank();
+					}
+					if (result != 0) {
+						return result;
+					}
+				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				throw new RuntimeException(e);
+			}
+
 			return 0;
 		}
 	};
-	
+
 	/*
-	public static Comparator<Hand> HandRank = new Comparator<Hand>() {
-
-		public int compare(Hand h1, Hand h2) {
-
-			int result = 0;
-
-			result = h2.getHandStrength() - h1.getHandStrength();
-
-			if (result != 0) {
-				return result;
-			}
-
-			result = h2.getHiHand() - h1.getHiHand();
-			if (result != 0) {
-				return result;
-			}
-
-			result = h2.getLoHand() - h1.getLoHand();
-			if (result != 0) {
-				return result;
-			}
-
-			if (h2.getKicker().get(eCardNo.FirstCard.getCardNo()) != null) {
-				if (h1.getKicker().get(eCardNo.FirstCard.getCardNo()) != null) {
-					result = h2.getKicker().get(eCardNo.FirstCard.getCardNo()).getRank().getRank()
-							- h1.getKicker().get(eCardNo.FirstCard.getCardNo()).getRank().getRank();
-				}
-				if (result != 0) {
-					return result;
-				}
-			}
-
-			if (h2.getKicker().get(eCardNo.SecondCard.getCardNo()) != null) {
-				if (h1.getKicker().get(eCardNo.SecondCard.getCardNo()) != null) {
-					result = h2.getKicker().get(eCardNo.SecondCard.getCardNo()).getRank().getRank()
-							- h1.getKicker().get(eCardNo.SecondCard.getCardNo()).getRank().getRank();
-				}
-				if (result != 0) {
-					return result;
-				}
-			}
-			if (h2.getKicker().get(eCardNo.ThirdCard.getCardNo()) != null) {
-				if (h1.getKicker().get(eCardNo.ThirdCard.getCardNo()) != null) {
-					result = h2.getKicker().get(eCardNo.ThirdCard.getCardNo()).getRank().getRank()
-							- h1.getKicker().get(eCardNo.ThirdCard.getCardNo()).getRank().getRank();
-				}
-				if (result != 0) {
-					return result;
-				}
-			}
-
-			if (h2.getKicker().get(eCardNo.FourthCard.getCardNo()) != null) {
-				if (h1.getKicker().get(eCardNo.FourthCard.getCardNo()) != null) {
-					result = h2.getKicker().get(eCardNo.FourthCard.getCardNo()).getRank().getRank()
-							- h1.getKicker().get(eCardNo.FourthCard.getCardNo()).getRank().getRank();
-				}
-				if (result != 0) {
-					return result;
-				}
-			}
-			return 0;
-		}
-	};
-	*/
+	 * public static Comparator<Hand> HandRank = new Comparator<Hand>() {
+	 * 
+	 * public int compare(Hand h1, Hand h2) {
+	 * 
+	 * int result = 0;
+	 * 
+	 * result = h2.getHandStrength() - h1.getHandStrength();
+	 * 
+	 * if (result != 0) { return result; }
+	 * 
+	 * result = h2.getHiHand() - h1.getHiHand(); if (result != 0) { return
+	 * result; }
+	 * 
+	 * result = h2.getLoHand() - h1.getLoHand(); if (result != 0) { return
+	 * result; }
+	 * 
+	 * if (h2.getKicker().get(eCardNo.FirstCard.getCardNo()) != null) { if
+	 * (h1.getKicker().get(eCardNo.FirstCard.getCardNo()) != null) { result =
+	 * h2.getKicker().get(eCardNo.FirstCard.getCardNo()).getRank().getRank() -
+	 * h1.getKicker().get(eCardNo.FirstCard.getCardNo()).getRank().getRank(); }
+	 * if (result != 0) { return result; } }
+	 * 
+	 * if (h2.getKicker().get(eCardNo.SecondCard.getCardNo()) != null) { if
+	 * (h1.getKicker().get(eCardNo.SecondCard.getCardNo()) != null) { result =
+	 * h2.getKicker().get(eCardNo.SecondCard.getCardNo()).getRank().getRank() -
+	 * h1.getKicker().get(eCardNo.SecondCard.getCardNo()).getRank().getRank(); }
+	 * if (result != 0) { return result; } } if
+	 * (h2.getKicker().get(eCardNo.ThirdCard.getCardNo()) != null) { if
+	 * (h1.getKicker().get(eCardNo.ThirdCard.getCardNo()) != null) { result =
+	 * h2.getKicker().get(eCardNo.ThirdCard.getCardNo()).getRank().getRank() -
+	 * h1.getKicker().get(eCardNo.ThirdCard.getCardNo()).getRank().getRank(); }
+	 * if (result != 0) { return result; } }
+	 * 
+	 * if (h2.getKicker().get(eCardNo.FourthCard.getCardNo()) != null) { if
+	 * (h1.getKicker().get(eCardNo.FourthCard.getCardNo()) != null) { result =
+	 * h2.getKicker().get(eCardNo.FourthCard.getCardNo()).getRank().getRank() -
+	 * h1.getKicker().get(eCardNo.FourthCard.getCardNo()).getRank().getRank(); }
+	 * if (result != 0) { return result; } } return 0; } };
+	 */
 }

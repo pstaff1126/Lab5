@@ -5,6 +5,8 @@ public class GamePlayPlayerHand {
 	private GamePlay game = null;
 	private Player player = null;
 	private Hand hand = null;
+	private Hand BestHand = null;
+			
 	
 	private Player WinningPlayer = null;
 	
@@ -47,6 +49,14 @@ public class GamePlayPlayerHand {
 
 	public void setWinningPlayer(Player winningPlayer) {
 		WinningPlayer = winningPlayer;
+	}
+
+	public Hand getBestHand() {
+		return BestHand;
+	}
+
+	public void setBestHand(Hand bestHand) {
+		BestHand = bestHand;
 	}
 
 	
