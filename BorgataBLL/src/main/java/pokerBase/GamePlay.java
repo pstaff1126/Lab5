@@ -22,7 +22,7 @@ public class GamePlay extends GamePlayDomainModel {
 	public GamePlay(Rule rle)
 	{
 		this.setGameID(UUID.randomUUID());
-		this.setNbrOfCards(rle.GetNumberOfCards());
+		this.setNbrOfCards(rle.GetPlayerNumberOfCards());
 		this.setMaxNbrOfPlayers(rle.GetMaxNumberOfPlayers());
 		this.setNbrOfJokers(rle.GetNumberOfJokers());
 		this.setWildCards(rle.GetRuleCards());

@@ -64,137 +64,59 @@ public class Hand extends HandDomainModel {
 		setCardsInHand(Import);
 	}
 
-	public static ArrayList<Hand> ListHands(Hand PlayerHand, Hand CommonHand, eEvalType eEval) {
+	public static ArrayList<Hand> ListHands(Hand PlayerHand, Hand CommonHand, GamePlay gme) {
 
 		ArrayList<Hand> CombinHands = new ArrayList<Hand>();
+		int iPlayerNumberOfCards = gme.getRule().GetPlayerNumberOfCards();
+		int iPlayerCardsMin = gme.getRule().getPlayerCardsMin();
+		int iPlayerCardsMax = gme.getRule().getPlayerCardsMax();
+		int iCommonCardsMin = gme.getRule().getCommunityCardsMin();
+		int iCommonCardsMax = gme.getRule().getCommunityCardsMax();
+		
+		
+		for (int iPassPlayer = 0; iPassPlayer <= (iPlayerCardsMax - iPlayerCardsMin);iPassPlayer++)
+		{
+			Iterator iterPlayer = CombinatoricsUtils.combinationsIterator(iPlayerNumberOfCards, (iPlayerCardsMin + iPassPlayer));
+			while (iterPlayer.hasNext())				
+			{
+				int[] iPlayerCardsToPick = (int[]) iterPlayer.next();
 
-		switch (eEval) {
-		case Normal:
-			CombinHands.add(PlayerHand);
-			break;
-		case Omaha:
-
-			Iterator iterPlayer2 = CombinatoricsUtils.combinationsIterator(4, 2);
-			while (iterPlayer2.hasNext()) {
-				int[] iPlayerCardsToPick = (int[]) iterPlayer2.next();
-
-				Iterator iterCommon2 = CombinatoricsUtils.combinationsIterator(5, 3);
-				while (iterCommon2.hasNext()) {
-					int[] iCommonCardsToPick = (int[]) iterCommon2.next();
+				if (iCommonCardsMax > 0)
+				{
+					Iterator iterCommon = CombinatoricsUtils.combinationsIterator(iCommonCardsMax, (iCommonCardsMax - iPlayerCardsToPick.length));
+					while (iterCommon.hasNext())
+					{
+						int[] iCommonCardsToPick = (int[]) iterCommon.next();
+						Hand h = new Hand();
+						for (int iPlayerArrayPos = 0; iPlayerArrayPos < iPlayerCardsToPick.length; iPlayerArrayPos++)
+						{
+							h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[iPlayerArrayPos]));
+						}
+						
+						for (int iCommonArrayPos = 0; iCommonArrayPos < iCommonCardsToPick.length; iCommonArrayPos++)
+						{
+							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[iCommonArrayPos]));
+						}				
+						CombinHands.add(h);
+					}						
+				}
+				else if (iCommonCardsMax == 0)
+				{
 					Hand h = new Hand();
-					h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[0]));
-					h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[1]));
-					
-					h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[0]));
-					h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[1]));
-					h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[2]));
-
+					for (int iPlayerArrayPos = 0; iPlayerArrayPos < iPlayerCardsToPick.length; iPlayerArrayPos++)
+					{
+						h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[iPlayerArrayPos]));
+					}
 					CombinHands.add(h);
 				}
-			}
-			System.out.println("Size at case 1");
-			System.out.println(CombinHands.size());
-
-			break;
-
-		case TexasHoldEm:
-			ArrayList<Card> cards = new ArrayList<Card>();
-			// Player has 2 cards. To determine the combinations, we'll have to
-			// pull zero from player, then each card, then both cards
-			// the rest of the cards are going to come from the common cards.
-
-			for (int iPlayerCard = 1; iPlayerCard < 4; iPlayerCard++) {
-				switch (iPlayerCard) {
-				case 1:
-					// This means pull zero cards from player, all cards from
-					// community
-					Hand h1 = new Hand();
-					h1.AddCardToHand((Card) CommonHand.getCards().get(0));
-					h1.AddCardToHand((Card) CommonHand.getCards().get(1));
-					h1.AddCardToHand((Card) CommonHand.getCards().get(2));
-					h1.AddCardToHand((Card) CommonHand.getCards().get(3));
-					h1.AddCardToHand((Card) CommonHand.getCards().get(4));
-					CombinHands.add(h1);
-
-					System.out.println("Size at case 1");
-					System.out.println(CombinHands.size());
-					break;
-				case 2:
-					// This means pull first card from player, four cards from
-					// community
-
-					Iterator iterTexasHoldemPlayer = CombinatoricsUtils.combinationsIterator(2, 1);
-					while (iterTexasHoldemPlayer.hasNext()) {
-						int[] iPlayerCardsToPick = (int[]) iterTexasHoldemPlayer.next();
-
-						Iterator iterCommon2 = CombinatoricsUtils.combinationsIterator(5, 4);
-						while (iterCommon2.hasNext()) {
-							int[] iCommonCardsToPick = (int[]) iterCommon2.next();
-							Hand h = new Hand();
-							h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[0]));
-
-							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[0]));
-							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[1]));
-							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[2]));
-							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[3]));
-
-							CombinHands.add(h);
-						}
-					}
-
-					System.out.println("Size at case 2");
-					System.out.println(CombinHands.size());
-
-					break;
-				case 3:
-					// This means pull second card from player, four cards from
-					// community
-					// This means pull first card from player, four cards from
-					// community
-
-					Iterator iterPlayer3 = CombinatoricsUtils.combinationsIterator(2, 2);
-					Iterator iterCommon3 = CombinatoricsUtils.combinationsIterator(5, 3);
-
-					while (iterPlayer3.hasNext()) {
-						int[] iPlayerCardsToPick = (int[]) iterPlayer3.next();
-
-						while (iterCommon3.hasNext()) {
-							int[] iCommonCardsToPick = (int[]) iterCommon3.next();
-							Hand h = new Hand();
-							h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[0]));
-							h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[1]));
-
-							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[0]));
-							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[1]));
-							h.AddCardToHand((Card) CommonHand.getCards().get(iCommonCardsToPick[2]));
-
-							CombinHands.add(h);
-						}
-					}
-
-					System.out.println("Size at case 3");
-					System.out.println(CombinHands.size());
-				}
-			}
-			break;
-
-		case SevenCard:
-
-			Iterator iterSevenCard = CombinatoricsUtils.combinationsIterator(7, 5);
-			while (iterSevenCard.hasNext()) {
-				int[] iPlayerCardsToPick = (int[]) iterSevenCard.next();
-				Hand h = new Hand();
-
-				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[0]));
-				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[1]));
-				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[2]));
-				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[3]));
-				h.AddCardToHand((Card) PlayerHand.getCards().get(iPlayerCardsToPick[4]));
-				CombinHands.add(h);
-			}
-			break;
+				
+		
+			}			
 		}
 
+		System.out.println("Size at case 1");
+		System.out.println(CombinHands.size());
+	
 		for (Hand h : CombinHands) {
 			h = Hand.EvalHand(h);
 		}

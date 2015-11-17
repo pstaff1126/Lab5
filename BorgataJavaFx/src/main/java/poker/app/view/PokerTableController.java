@@ -360,7 +360,7 @@ public class PokerTableController {
 				Hand PlayerHand = GPPH.getHand();
 				GamePlayPlayerHand GPCH = gme.FindPlayerGame(gme, PlayerCommon);
 				
-				ArrayList<Hand> AllHands = Hand.ListHands(GPPH.getHand(), GPCH.getHand(),eEval );
+				ArrayList<Hand> AllHands = Hand.ListHands(GPPH.getHand(), GPCH.getHand(), GPPH.getGame() );
 				Hand hBestHand = Hand.PickBestHand(AllHands);
 				GPPH.setBestHand(hBestHand);
 			}
