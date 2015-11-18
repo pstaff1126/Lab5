@@ -17,6 +17,7 @@ public class Rule {
 	private int CommunityCardsMin;
 	private int CommunityCardsMax;
 	private int PossibleHandCombinations;
+	private int[] iCardsToDraw;
 	private ArrayList<CardDomainModel> RuleCards = new ArrayList<CardDomainModel>();
 	private eGame Game;
 
@@ -32,6 +33,8 @@ public class Rule {
 			this.CommunityCardsMin = 0;
 			this.CommunityCardsMax = 0;	
 			this.PossibleHandCombinations = 1;
+			int[] iCardsToDraw = {2,1,1,1};
+			this.iCardsToDraw = iCardsToDraw;
 			break;
 		}
 		case FiveStudOneJoker: {
@@ -43,6 +46,8 @@ public class Rule {
 			this.CommunityCardsMin = 0;
 			this.CommunityCardsMax = 0;
 			this.PossibleHandCombinations = 1;
+			int[] iCardsToDraw = {2,1,1,1};
+			this.iCardsToDraw = iCardsToDraw;			
 			break;
 		}
 		case FiveStudTwoJoker: {
@@ -54,6 +59,8 @@ public class Rule {
 			this.CommunityCardsMin = 0;
 			this.CommunityCardsMax = 0;
 			this.PossibleHandCombinations = 1;
+			int[] iCardsToDraw = {2,1,1,1};
+			this.iCardsToDraw = iCardsToDraw;			
 			break;
 		}
 		case TexasHoldEm: {
@@ -65,6 +72,8 @@ public class Rule {
 			this.CommunityCardsMin = 3;
 			this.CommunityCardsMax = 5;
 			this.PossibleHandCombinations = 21;
+			int[] iCardsToDraw = {2,3,1,1};
+			this.iCardsToDraw = iCardsToDraw;			
 			break;
 		}
 		case Omaha: {
@@ -76,6 +85,8 @@ public class Rule {
 			this.CommunityCardsMin = 3;
 			this.CommunityCardsMax = 5;
 			this.PossibleHandCombinations = 60;
+			int[] iCardsToDraw = {2,2,3,1,1};
+			this.iCardsToDraw = iCardsToDraw;				
 			break;
 		}
 		case SuperOmaha: {
@@ -87,6 +98,8 @@ public class Rule {
 			this.CommunityCardsMin = 3;
 			this.CommunityCardsMax = 5;
 			this.PossibleHandCombinations = 81;
+			int[] iCardsToDraw = {2,2,3,1,1};
+			this.iCardsToDraw = iCardsToDraw;				
 			break;
 		}		
 		case SevenDraw: {
@@ -98,6 +111,9 @@ public class Rule {
 			this.CommunityCardsMin = 0;
 			this.CommunityCardsMax = 0;
 			this.PossibleHandCombinations = 21;
+			int[] iCardsToDraw = {1,1,1,1,1,1,1};
+			this.iCardsToDraw = iCardsToDraw;				
+			
 			break;
 		}		
 		case DeucesWild: {
@@ -113,6 +129,8 @@ public class Rule {
 			this.CommunityCardsMin = 0;
 			this.CommunityCardsMax = 0;
 			this.PossibleHandCombinations = 1;
+			int[] iCardsToDraw = {1,1,1,1,1};
+			this.iCardsToDraw = iCardsToDraw;				
 			break;
 		}
 		case AcesAndEights: {
@@ -132,6 +150,8 @@ public class Rule {
 			this.CommunityCardsMin = 0;
 			this.CommunityCardsMax = 0;
 			this.PossibleHandCombinations = 1;
+			int[] iCardsToDraw = {1,1,1,1,1};
+			this.iCardsToDraw = iCardsToDraw;							
 			break;
 		}
 		}
@@ -206,6 +226,14 @@ public class Rule {
 
 	public void setPossibleHandCombinations(int possibleHandCombinations) {
 		PossibleHandCombinations = possibleHandCombinations;
+	}
+
+	public int[] getiCardsToDraw() {
+		return iCardsToDraw;
+	}
+
+	public void setiCardsToDraw(int[] iCardsToDraw) {
+		this.iCardsToDraw = iCardsToDraw;
 	}
 	
 }

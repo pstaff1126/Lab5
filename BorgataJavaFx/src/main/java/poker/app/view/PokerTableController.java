@@ -9,7 +9,10 @@ import org.apache.commons.math3.util.Combinations;
 
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
+import domain.CardDomainModel;
 import enums.eGame;
+import enums.eRank;
+import enums.eSuit;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.RotateTransition;
@@ -46,6 +49,7 @@ import pokerBase.Player;
 import pokerBase.Rule;
 import pokerBase.Action;
 import pokerEnums.eDrawAction;
+import pokerEnums.eGameState;
 
 public class PokerTableController {
 
@@ -59,6 +63,7 @@ public class PokerTableController {
 	// Reference to the main application.
 	private MainApp mainApp;
 	private GamePlay gme = null;
+	private int iDrawCount = 0;
 	private int iCardDrawn = 0;
 	private int iCardDrawnPlayer = 0;
 	private int iCardDrawnCommon = 0;
@@ -122,6 +127,8 @@ public class PokerTableController {
 	@FXML
 	public Button btnPlay;
 
+	private eGameState eGameState;
+
 	public PokerTableController() {
 	}
 
@@ -144,10 +151,10 @@ public class PokerTableController {
 	}
 
 	@FXML
-	private void handleP1SitLeave() {		
+	private void handleP1SitLeave() {
 		int iPlayerPosition = 1;
 		btnP1SitLeave.setDisable(true);
-		bP1Sit = handleSitLeave(bP1Sit, iPlayerPosition, lblP1Name, txtP1Name, btnP1SitLeave);
+		bP1Sit = handleSitLeave(bP1Sit, iPlayerPosition, lblP1Name, txtP1Name, btnP1SitLeave, hBoxP1Cards);
 		btnP1SitLeave.setDisable(false);
 	}
 
@@ -155,7 +162,7 @@ public class PokerTableController {
 	private void handleP2SitLeave() {
 		int iPlayerPosition = 2;
 		btnP2SitLeave.setDisable(true);
-		bP2Sit = handleSitLeave(bP2Sit, iPlayerPosition, lblP2Name, txtP2Name, btnP2SitLeave);
+		bP2Sit = handleSitLeave(bP2Sit, iPlayerPosition, lblP2Name, txtP2Name, btnP2SitLeave, hBoxP2Cards);
 		btnP2SitLeave.setDisable(false);
 	}
 
@@ -163,7 +170,7 @@ public class PokerTableController {
 	private void handleP3SitLeave() {
 		int iPlayerPosition = 3;
 		btnP3SitLeave.setDisable(true);
-		bP3Sit =handleSitLeave(bP3Sit, iPlayerPosition, lblP3Name, txtP3Name, btnP3SitLeave);
+		bP3Sit = handleSitLeave(bP3Sit, iPlayerPosition, lblP3Name, txtP3Name, btnP3SitLeave, hBoxP3Cards);
 		btnP3SitLeave.setDisable(false);
 	}
 
@@ -171,12 +178,12 @@ public class PokerTableController {
 	private void handleP4SitLeave() {
 		int iPlayerPosition = 4;
 		btnP4SitLeave.setDisable(true);
-		bP4Sit = handleSitLeave(bP4Sit, iPlayerPosition, lblP4Name, txtP4Name, btnP4SitLeave);
+		bP4Sit = handleSitLeave(bP4Sit, iPlayerPosition, lblP4Name, txtP4Name, btnP4SitLeave, hBoxP4Cards);
 		btnP4SitLeave.setDisable(false);
 	}
 
 	private boolean handleSitLeave(boolean bSit, int iPlayerPosition, Label lblPlayer, TextField txtPlayer,
-			ToggleButton btnSitLeave) {
+			ToggleButton btnSitLeave, HBox HBoxPlayerCards) {
 		if (bSit == false) {
 			Player p = new Player(txtPlayer.getText(), iPlayerPosition);
 			mainApp.AddPlayerToTable(p);
@@ -190,14 +197,41 @@ public class PokerTableController {
 			btnSitLeave.setText("Sit");
 			txtPlayer.setVisible(true);
 			lblPlayer.setVisible(false);
+			HBoxPlayerCards.getChildren().clear();
 			bSit = false;
 		}
-		
+
 		return bSit;
+	}
+
+	private void SetGameControls(eGameState eGameState) {
+		switch (eGameState) {
+		case StartOfGame:
+			btnDraw.setVisible(true);
+			btnDraw.setDisable(false);
+			btnPlay.setVisible(false);
+			iCardDrawn = 0;
+			iCardDrawnPlayer = 0;
+			iCardDrawnCommon = 0;
+			iDrawCount = 0;
+			break;
+		case PlayOfGame:
+			btnDraw.setDisable(false);
+			break;
+		case EndOfGame:
+			btnDraw.setVisible(false);
+			btnPlay.setVisible(true);
+			break;
+		case DrawingCard:
+			btnDraw.setDisable(true);
+			break;
+		}
 	}
 
 	@FXML
 	private void handlePlay() {
+
+		eGameState = eGameState.StartOfGame;
 
 		// Clear all players hands
 		hBoxP1Cards.getChildren().clear();
@@ -205,19 +239,19 @@ public class PokerTableController {
 		hBoxP3Cards.getChildren().clear();
 		hBoxP4Cards.getChildren().clear();
 
+		// Face down card (will represent the deck)
 		ImageView imgBottomCard = new ImageView(
 				new Image(getClass().getResourceAsStream("/res/img/b1fh.png"), 75, 75, true, true));
 
 		HboxCommonArea.getChildren().clear();
 		HboxCommonArea.getChildren().add(imgBottomCard);
 		HboxCommunityCards.getChildren().clear();
-		
-		
+
 		// Get the Rule, start the Game
-		Rule rle = new Rule(eGame.TexasHoldEm);
+		Rule rle = new Rule(eGame.Omaha);
 		gme = new GamePlay(rle);
 
-		// Add the seated players to the game
+		// Add the seated players to the game, create a GPPH for the player
 		for (Player p : mainApp.GetSeatedPlayers()) {
 			gme.addPlayerToGame(p);
 			GamePlayPlayerHand GPPH = new GamePlayPlayerHand();
@@ -228,6 +262,7 @@ public class PokerTableController {
 			DealFaceDownCards(gme.getNbrOfCards(), p.getiPlayerPosition());
 		}
 
+		// Add the common player (community player) to the game
 		GamePlayPlayerHand GPCH = new GamePlayPlayerHand();
 		GPCH.setGame(gme);
 		GPCH.setPlayer(PlayerCommon);
@@ -238,13 +273,8 @@ public class PokerTableController {
 		// Add a deck to the game
 		gme.setGameDeck(new Deck(rle.GetNumberOfJokers(), rle.GetRuleCards()));
 
-		btnDraw.setVisible(true);
-		btnDraw.setDisable(false);
-		btnPlay.setVisible(false);
-		iCardDrawn = 0;
-		iCardDrawnPlayer = 0;
-	iCardDrawnCommon = 0;
-
+		// Call common code to set the game controls
+		SetGameControls(eGameState);
 
 	}
 
@@ -282,101 +312,124 @@ public class PokerTableController {
 	@FXML
 	private void handleDraw() {
 		iCardDrawn++;
+		iDrawCount++;
 		ImageView imView = null;
+		eGameState = eGameState.PlayOfGame;
 
 		// Disable the button in case of double-click
-		btnDraw.setDisable(true);
+		SetGameControls(eGameState.DrawingCard);
 
 		// Create the parent transition
 		SequentialTransition tranDealCards = new SequentialTransition();
 
-		//	Figure the action based on the game, state of game
-		Action act = new Action(gme, iCardDrawn);
+		// Figure the action based on the game, state of game
+		Action act = new Action(gme, iCardDrawnPlayer, iCardDrawnCommon, iDrawCount);
 
 		if (act.geteDrawAction() == eDrawAction.DrawPlayer) {
-			iCardDrawnPlayer++;			
 			// Draw a card for each player seated
-			for (Player p : mainApp.GetSeatedPlayers()) {
-				Card c = gme.getGameDeck().drawFromDeck();
+			for (int iDraw = 0; iDraw < act.getiCardDrawn(); iDraw++) {
+				iCardDrawnPlayer++;
+				for (Player p : mainApp.GetSeatedPlayers()) {
+					Card c = gme.getGameDeck().drawFromDeck();
 
-				HBox PlayerCardBox = null;
+					HBox PlayerCardBox = null;
 
-				switch (p.getiPlayerPosition()) {
-				case 1:
-					PlayerCardBox = hBoxP1Cards;
-					imView = imgTransCardP1;
-					break;
-				case 2:
-					PlayerCardBox = hBoxP2Cards;
-					imView = imgTransCardP2;
-					break;
+					switch (p.getiPlayerPosition()) {
+					case 1:
+						PlayerCardBox = hBoxP1Cards;
+						imView = imgTransCardP1;
+						break;
+					case 2:
+						PlayerCardBox = hBoxP2Cards;
+						imView = imgTransCardP2;
+						break;
 
-				case 3:
-					PlayerCardBox = hBoxP3Cards;
-					imView = imgTransCardP3;
-					break;
+					case 3:
+						PlayerCardBox = hBoxP3Cards;
+						imView = imgTransCardP3;
+						break;
 
-				case 4:
-					PlayerCardBox = hBoxP4Cards;
-					imView = imgTransCardP4;
-					break;
+					case 4:
+						PlayerCardBox = hBoxP4Cards;
+						imView = imgTransCardP4;
+						break;
 
+					}
+					gme.FindPlayerGame(gme, p).addCardToHand(c);
+					tranDealCards.getChildren().add(CalculateTransition(c, PlayerCardBox, imView, iCardDrawnPlayer));
 				}
-				GamePlayPlayerHand GPPH = gme.FindPlayerGame(gme, p);
-				GPPH.addCardToHand(c);
-				tranDealCards.getChildren().add(CalculateTransition(c, PlayerCardBox, imView, iCardDrawnPlayer));
-				//tranDealCards.getChildren().add(FadeOutTransition(imView));
 			}
 
 		} else if (act.geteDrawAction() == eDrawAction.DrawCommon) {
-			iCardDrawnCommon++;
-			imView = imgTransCardCommon;
-			Card c = gme.getGameDeck().drawFromDeck();
-			GamePlayPlayerHand GPCH = gme.FindCommonHand(gme);
-			GPCH.addCardToHand(c);
-			tranDealCards.getChildren().add(CalculateTransition(c, HboxCommunityCards, imView, iCardDrawnCommon));
-			//tranDealCards.getChildren().add(FadeOutTransition(imView));
+
+			for (int iDraw = 0; iDraw < act.getiCardDrawn(); iDraw++) {
+				iCardDrawnCommon++;
+				imView = imgTransCardCommon;
+				Card c = gme.getGameDeck().drawFromDeck();
+				gme.FindCommonHand(gme).addCardToHand(c);
+				tranDealCards.getChildren().add(CalculateTransition(c, HboxCommunityCards, imView, iCardDrawnCommon));
+			}
 		}
 
-
+		// tranDealCards is the master transition... it has deals for every card
+		// to every player. Play it.
 		tranDealCards.play();
-		
-		
-		
-		
+
 		// If bEvalHand is true, it's time to evaluate the Hand...
 		if (act.isbEvaluateHand()) {
 
 			ArrayList<GamePlayPlayerHand> AllPlayersHands = new ArrayList<GamePlayPlayerHand>();
 			ArrayList<Hand> BestPlayerHands = new ArrayList<Hand>();
 			HashMap hsPlayerHand = new HashMap();
-			
+
 			for (Player p : mainApp.GetSeatedPlayers()) {
 				GamePlayPlayerHand GPPH = gme.FindPlayerGame(gme, p);
 				Hand PlayerHand = GPPH.getHand();
 				GamePlayPlayerHand GPCH = gme.FindCommonHand(gme);
-				
-				ArrayList<Hand> AllHands = Hand.ListHands(GPPH.getHand(), GPCH.getHand(), GPPH.getGame() );
+
+				ArrayList<Hand> AllHands = Hand.ListHands(GPPH.getHand(), GPCH.getHand(), GPPH.getGame());
 				Hand hBestHand = Hand.PickBestHand(AllHands);
 				GPPH.setBestHand(hBestHand);
 				hsPlayerHand.put(hBestHand, GPPH.getPlayer());
 				BestPlayerHands.add(hBestHand);
-			}					
-			
+			}
+
 			Hand WinningHand = Hand.PickBestHand(BestPlayerHands);
-			Player WinningPlayer = (Player)hsPlayerHand.get(WinningHand);
+			Player WinningPlayer = (Player) hsPlayerHand.get(WinningHand);
 			System.out.println("Winning Player Position: " + WinningPlayer.getiPlayerPosition());
-			btnDraw.setVisible(false);
-			btnPlay.setVisible(true);			
-		}
-		else
-		{
+			SetGameControls(eGameState.EndOfGame);
+
+		} else {
+			if (iCardDrawnPlayer + iCardDrawnCommon + 2 >= gme.getRule().getTotalCardsToDraw()) {
+				for (Player p : mainApp.GetSeatedPlayers()) {
+					Hand hPlayer = gme.FindPlayerGame(gme, p).getHand();
+					for (int a = hPlayer.getCards().size(); a < gme.getRule().GetPlayerNumberOfCards(); a++) {
+						hPlayer.AddCardToHand(new Card(eSuit.JOKER, eRank.JOKER, 0));
+					}
+
+					Hand hCommon = gme.FindCommonHand(gme).getHand();
+
+					if (hCommon.getCards() == null) {
+						for (int a = 0; a < gme.getRule().GetCommunityCardsCount(); a++) {
+							hCommon.AddCardToHand(new Card(eSuit.JOKER, eRank.JOKER, 0));
+						}
+					} else {
+
+						for (int a = hCommon.getCards().size(); a < gme.getRule().GetCommunityCardsCount(); a++) {
+							hCommon.AddCardToHand(new Card(eSuit.JOKER, eRank.JOKER, 0));
+						}
+					}
+					ArrayList<Hand> AllHands = Hand.ListHands(hPlayer, hCommon, gme);
+
+					System.out.println(AllHands.get(0).getHandStrength());
+				}
+			}
+
 			// Re-enable the draw button
-			btnDraw.setDisable(false);
+			SetGameControls(eGameState);
 		}
 
 	}
-
 
 	private SequentialTransition CalculateTransition(Card c, HBox PlayerCardBox, ImageView imView, int iCardDrawn) {
 		// This is the card that is going to be dealt to the player.
@@ -400,26 +453,21 @@ public class PokerTableController {
 
 		// Add a sequential transition to the card (move, rotate)
 		SequentialTransition transMoveRotCard = createTransition(pntCardDeck, pntCardDealt, imView);
-		
-		
+
 		// Add a parallel transition to the card (fade in/fade out).
 		final ParallelTransition transFadeCardInOut = createFadeTransition(imgvCardFaceDown,
 				new Image(getClass().getResourceAsStream(strCard), 75, 75, true, true));
 
-
-		
-		
-		
 		SequentialTransition transAllActions = new SequentialTransition();
 		transAllActions.getChildren().addAll(transMoveRotCard, transFadeCardInOut);
-		
+
 		return transAllActions;
 	}
 
-	private SequentialTransition createTransition(final Point2D pntStartPoint, final Point2D pntEndPoint, ImageView imView) {
+	private SequentialTransition createTransition(final Point2D pntStartPoint, final Point2D pntEndPoint,
+			ImageView imView) {
 
-		imView = new ImageView(
-				new Image(getClass().getResourceAsStream("/res/img/b1fh.png"), 75, 75, true, true));
+		imView = new ImageView(new Image(getClass().getResourceAsStream("/res/img/b1fh.png"), 75, 75, true, true));
 
 		imView.setX(pntStartPoint.getX());
 		imView.setY(pntStartPoint.getY() - 30);
@@ -437,7 +485,6 @@ public class PokerTableController {
 
 		int rnd = randInt(1, 3);
 
-
 		RotateTransition rotateTransition = new RotateTransition(Duration.millis(150), imView);
 		rotateTransition.setByAngle(90F);
 		rotateTransition.setCycleCount(rnd);
@@ -448,7 +495,7 @@ public class PokerTableController {
 
 		SequentialTransition seqTrans = new SequentialTransition();
 		seqTrans.getChildren().addAll(parallelTransition);
-		
+
 		final ImageView ivRemove = imView;
 		seqTrans.setOnFinished(new EventHandler<ActionEvent>() {
 
@@ -480,16 +527,15 @@ public class PokerTableController {
 		fadeInTransition.setToValue(1.0);
 
 		/*
-		FadeTransition fadeFlyCare = FadeOutTransition(ivFlyCard);
-		*/
-		
+		 * FadeTransition fadeFlyCare = FadeOutTransition(ivFlyCard);
+		 */
+
 		ParallelTransition parallelTransition = new ParallelTransition();
 		parallelTransition.getChildren().addAll(fadeOutTransition, fadeInTransition);
 
 		return parallelTransition;
 	}
 
-	
 	/**
 	 * randInt - Create a random number
 	 * 
