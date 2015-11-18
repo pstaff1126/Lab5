@@ -109,14 +109,10 @@ public class Hand extends HandDomainModel {
 					}
 					CombinHands.add(h);
 				}
-				
-		
 			}			
 		}
 
-		System.out.println("Size at case 1");
-		System.out.println(CombinHands.size());
-	
+		//	Evaluate each hand (why not?)
 		for (Hand h : CombinHands) {
 			h = Hand.EvalHand(h);
 		}

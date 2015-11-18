@@ -1,7 +1,9 @@
 package poker.app.view;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
+import java.util.UUID;
 
 import org.apache.commons.math3.util.Combinations;
 
@@ -58,13 +60,19 @@ public class PokerTableController {
 	private MainApp mainApp;
 	private GamePlay gme = null;
 	private int iCardDrawn = 0;
+	private int iCardDrawnPlayer = 0;
+	private int iCardDrawnCommon = 0;
 
 	private Player PlayerCommon = new Player("Common", 0);
 
 	@FXML
 	public AnchorPane APMainScreen;
 
-	private ImageView imgTransCard = new ImageView();
+	private ImageView imgTransCardP1 = new ImageView();
+	private ImageView imgTransCardP2 = new ImageView();
+	private ImageView imgTransCardP3 = new ImageView();
+	private ImageView imgTransCardP4 = new ImageView();
+	private ImageView imgTransCardCommon = new ImageView();
 
 	@FXML
 	public HBox HboxCommonArea;
@@ -155,7 +163,7 @@ public class PokerTableController {
 
 	@FXML
 	private void handleP4SitLeave() {
-		int iPlayerPosition = 3;
+		int iPlayerPosition = 4;
 		handleSitLeave(bP1Sit, iPlayerPosition, lblP4Name, txtP4Name, btnP4SitLeave);
 	}
 
@@ -192,12 +200,11 @@ public class PokerTableController {
 
 		HboxCommonArea.getChildren().clear();
 		HboxCommonArea.getChildren().add(imgBottomCard);
-		
 		HboxCommunityCards.getChildren().clear();
 		
 		
 		// Get the Rule, start the Game
-		Rule rle = new Rule(eGame.FiveStud);
+		Rule rle = new Rule(eGame.SuperOmaha);
 		gme = new GamePlay(rle);
 
 		// Add the seated players to the game
@@ -216,14 +223,17 @@ public class PokerTableController {
 		GPCH.setPlayer(PlayerCommon);
 		GPCH.setHand(new Hand());
 		gme.addGamePlayCommonHand(GPCH);
+		DealFaceDownCards(gme.getRule().GetCommunityCardsCount(), 0);
 
 		// Add a deck to the game
-		gme.setGameDeck(new Deck());
+		gme.setGameDeck(new Deck(rle.GetNumberOfJokers(), rle.GetRuleCards()));
 
 		btnDraw.setVisible(true);
+		btnDraw.setDisable(false);
 		btnPlay.setVisible(false);
 		iCardDrawn = 0;
-
+		iCardDrawnPlayer = 0;
+	iCardDrawnCommon = 0;
 
 
 	}
@@ -232,6 +242,9 @@ public class PokerTableController {
 		HBox PlayerCardBox = null;
 
 		switch (iPlayerPosition) {
+		case 0:
+			PlayerCardBox = HboxCommunityCards;
+			break;
 		case 1:
 			PlayerCardBox = hBoxP1Cards;
 			break;
@@ -262,10 +275,13 @@ public class PokerTableController {
 		eDrawAction eDrawAction = null;
 		boolean bEvalHand = false;
 		eEvalType eEval = null;
+		ImageView imView = null;
 
 		// Disable the button in case of double-click
 		btnDraw.setDisable(true);
 
+		SequentialTransition tranDealCards = new SequentialTransition();
+		
 		// Determine the iDrawAction (draw to player, draw to common
 		if ((gme.getRule().GetGame() == eGame.FiveStud) || (gme.getRule().GetGame() == eGame.AcesAndEights)
 				|| (gme.getRule().GetGame() == eGame.DeucesWild) || (gme.getRule().GetGame() == eGame.FiveStudOneJoker)
@@ -273,19 +289,21 @@ public class PokerTableController {
 			eEval = eEvalType.Normal;
 			if ((iCardDrawn >= 1) && (iCardDrawn <= 5)) {
 				eDrawAction = eDrawAction.DrawPlayer;
-			} else if (iCardDrawn == 5) {
+			} 
+			if (iCardDrawn == gme.getRule().getTotalCardsToDraw()) {
 				bEvalHand = true;
 			}
 		}
 
-		if ((gme.getRule().GetGame() == eGame.Omaha)) {
+		if ((gme.getRule().GetGame() == eGame.Omaha) ||(gme.getRule().GetGame() == eGame.SuperOmaha)) {
 			eEval = eEvalType.Omaha;
 			if ((iCardDrawn >= 1) && (iCardDrawn <= 4)) {
 				eDrawAction = eDrawAction.DrawPlayer;
 			}
 			if ((iCardDrawn > 4) && (iCardDrawn <= 9)) {
 				eDrawAction = eDrawAction.DrawCommon;
-			} else if (iCardDrawn == 9) {
+			}
+			if (iCardDrawn == gme.getRule().getTotalCardsToDraw()) {
 				bEvalHand = true;
 			}
 		}
@@ -298,7 +316,7 @@ public class PokerTableController {
 			if ((iCardDrawn > 2) && (iCardDrawn <= 7)) {
 				eDrawAction = eDrawAction.DrawCommon;
 			}
-			if (iCardDrawn == 7) {
+			if (iCardDrawn == gme.getRule().getTotalCardsToDraw()) {
 				bEvalHand = true;
 			}
 		}
@@ -308,13 +326,13 @@ public class PokerTableController {
 			if ((iCardDrawn >= 1) && (iCardDrawn <= 7)) {
 				eDrawAction = eDrawAction.DrawPlayer;
 			}
-			if (iCardDrawn == 7) {
+			if (iCardDrawn == gme.getRule().getTotalCardsToDraw()) {
 				bEvalHand = true;
 			}
 		}
 
 		if (eDrawAction == eDrawAction.DrawPlayer) {
-
+			iCardDrawnPlayer++;			
 			// Draw a card for each player seated
 			for (Player p : mainApp.GetSeatedPlayers()) {
 				Card c = gme.getGameDeck().drawFromDeck();
@@ -324,55 +342,81 @@ public class PokerTableController {
 				switch (p.getiPlayerPosition()) {
 				case 1:
 					PlayerCardBox = hBoxP1Cards;
+					imView = imgTransCardP1;
 					break;
 				case 2:
 					PlayerCardBox = hBoxP2Cards;
+					imView = imgTransCardP2;
 					break;
 
 				case 3:
 					PlayerCardBox = hBoxP3Cards;
+					imView = imgTransCardP3;
 					break;
 
 				case 4:
 					PlayerCardBox = hBoxP4Cards;
+					imView = imgTransCardP4;
 					break;
 
 				}
 				GamePlayPlayerHand GPPH = gme.FindPlayerGame(gme, p);
 				GPPH.addCardToHand(c);
-				PerformTransitions(c, PlayerCardBox);
+				tranDealCards.getChildren().add(CalculateTransition(c, PlayerCardBox, imView, iCardDrawnPlayer));
+				//tranDealCards.getChildren().add(FadeOutTransition(imView));
 			}
 
 		} else if (eDrawAction == eDrawAction.DrawCommon) {
+			iCardDrawnCommon++;
+			imView = imgTransCardCommon;
 			Card c = gme.getGameDeck().drawFromDeck();
-			GamePlayPlayerHand GPCH = gme.FindPlayerGame(gme, PlayerCommon);
+			GamePlayPlayerHand GPCH = gme.FindCommonHand(gme);
 			GPCH.addCardToHand(c);
-			PerformTransitions(c, HboxCommunityCards);
+			tranDealCards.getChildren().add(CalculateTransition(c, HboxCommunityCards, imView, iCardDrawnCommon));
+			//tranDealCards.getChildren().add(FadeOutTransition(imView));
 		}
 
+
+		tranDealCards.play();
+		
+		
+		
+		
 		// If bEvalHand is true, it's time to evaluate the Hand...
 		if (bEvalHand) {
-			btnDraw.setVisible(false);
+
 			ArrayList<GamePlayPlayerHand> AllPlayersHands = new ArrayList<GamePlayPlayerHand>();
+			ArrayList<Hand> BestPlayerHands = new ArrayList<Hand>();
+			HashMap hsPlayerHand = new HashMap();
 			
 			for (Player p : mainApp.GetSeatedPlayers()) {
 				GamePlayPlayerHand GPPH = gme.FindPlayerGame(gme, p);
 				Hand PlayerHand = GPPH.getHand();
-				GamePlayPlayerHand GPCH = gme.FindPlayerGame(gme, PlayerCommon);
+				GamePlayPlayerHand GPCH = gme.FindCommonHand(gme);
 				
 				ArrayList<Hand> AllHands = Hand.ListHands(GPPH.getHand(), GPCH.getHand(), GPPH.getGame() );
 				Hand hBestHand = Hand.PickBestHand(AllHands);
 				GPPH.setBestHand(hBestHand);
-			}
-
+				hsPlayerHand.put(hBestHand, GPPH.getPlayer());
+				BestPlayerHands.add(hBestHand);
+			}					
+			
+			Hand WinningHand = Hand.PickBestHand(BestPlayerHands);
+			Player WinningPlayer = (Player)hsPlayerHand.get(WinningHand);
+			System.out.println("Winning Player Position: " + WinningPlayer.getiPlayerPosition());
+			btnDraw.setVisible(false);
+			btnPlay.setVisible(true);			
+		}
+		else
+		{
+			// Re-enable the draw button
+			btnDraw.setDisable(false);
 		}
 
 	}
 
-	
 
-
-	private void PerformTransitions(Card c, HBox PlayerCardBox) {
+	private SequentialTransition CalculateTransition(Card c, HBox PlayerCardBox, ImageView imView, int iCardDrawn) {
 		// This is the card that is going to be dealt to the player.
 		String strCard = "/res/img/" + c.getCardImg();
 		ImageView imgvCardDealt = new ImageView(new Image(getClass().getResourceAsStream(strCard), 96, 71, true, true));
@@ -393,47 +437,34 @@ public class PokerTableController {
 		Point2D pntCardDeck = new Point2D(bndCardDeck.getMinX(), bndCardDeck.getMinY());
 
 		// Add a sequential transition to the card (move, rotate)
-		SequentialTransition transMoveRotCard = createTransition(pntCardDeck, pntCardDealt);
-
+		SequentialTransition transMoveRotCard = createTransition(pntCardDeck, pntCardDealt, imView);
+		
+		
 		// Add a parallel transition to the card (fade in/fade out).
 		final ParallelTransition transFadeCardInOut = createFadeTransition(imgvCardFaceDown,
 				new Image(getClass().getResourceAsStream(strCard), 75, 75, true, true));
-		/*
-		 * transFadeCardInOut.onFinishedProperty().set(new
-		 * EventHandler<ActionEvent>() {
-		 * 
-		 * @Override public void handle(ActionEvent actionEvent) { } });
-		 */
 
-		transMoveRotCard.onFinishedProperty().set(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent actionEvent) {
 
-				// get rid of the created card, run the fade in/fade out
-				// transition
-				// This isn't going to fire until the transMoveRotCard
-				// is
-				// complete.
-				APMainScreen.getChildren().remove(imgTransCard);
-				transFadeCardInOut.play();
-
-				// Enable the draw button after the animation is done.
-				btnDraw.setDisable(false);
-			}
-		});
+		
+		
+		
+		SequentialTransition transAllActions = new SequentialTransition();
+		transAllActions.getChildren().addAll(transMoveRotCard, transFadeCardInOut);
+		
+		return transAllActions;
 	}
 
-	private SequentialTransition createTransition(final Point2D pntStartPoint, final Point2D pntEndPoint) {
+	private SequentialTransition createTransition(final Point2D pntStartPoint, final Point2D pntEndPoint, ImageView imView) {
 
-		imgTransCard = new ImageView(
+		imView = new ImageView(
 				new Image(getClass().getResourceAsStream("/res/img/b2fh.png"), 75, 75, true, true));
 
-		imgTransCard.setX(pntStartPoint.getX());
-		imgTransCard.setY(pntStartPoint.getY() - 30);
+		imView.setX(pntStartPoint.getX());
+		imView.setY(pntStartPoint.getY() - 30);
 
-		APMainScreen.getChildren().add(imgTransCard);
+		APMainScreen.getChildren().add(imView);
 
-		TranslateTransition translateTransition = new TranslateTransition(Duration.millis(500), imgTransCard);
+		TranslateTransition translateTransition = new TranslateTransition(Duration.millis(300), imView);
 		translateTransition.setFromX(0);
 		translateTransition.setToX(pntEndPoint.getX() - pntStartPoint.getX());
 		translateTransition.setFromY(0);
@@ -442,11 +473,10 @@ public class PokerTableController {
 		translateTransition.setCycleCount(1);
 		translateTransition.setAutoReverse(false);
 
-		int rnd = randInt(1, 6);
+		int rnd = randInt(1, 3);
 
-		System.out.println(rnd);
 
-		RotateTransition rotateTransition = new RotateTransition(Duration.millis(150), imgTransCard);
+		RotateTransition rotateTransition = new RotateTransition(Duration.millis(150), imView);
 		rotateTransition.setByAngle(90F);
 		rotateTransition.setCycleCount(rnd);
 		rotateTransition.setAutoReverse(false);
@@ -456,6 +486,15 @@ public class PokerTableController {
 
 		SequentialTransition seqTrans = new SequentialTransition();
 		seqTrans.getChildren().addAll(parallelTransition);
+		
+		final ImageView ivRemove = imView;
+		seqTrans.setOnFinished(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent arg0) {
+				APMainScreen.getChildren().remove(ivRemove);
+			}
+		});
 
 		return seqTrans;
 	}
@@ -470,7 +509,6 @@ public class PokerTableController {
 			@Override
 			public void handle(ActionEvent arg0) {
 				iv.setImage(img);
-				;
 			}
 
 		});
@@ -479,12 +517,17 @@ public class PokerTableController {
 		fadeInTransition.setFromValue(0.0);
 		fadeInTransition.setToValue(1.0);
 
+		/*
+		FadeTransition fadeFlyCare = FadeOutTransition(ivFlyCard);
+		*/
+		
 		ParallelTransition parallelTransition = new ParallelTransition();
 		parallelTransition.getChildren().addAll(fadeOutTransition, fadeInTransition);
 
 		return parallelTransition;
 	}
 
+	
 	/**
 	 * randInt - Create a random number
 	 * 

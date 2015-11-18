@@ -10,13 +10,13 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="APMainScreen" prefHeight="600.0" prefWidth="1000.0" style="-fx-background-color: green;" stylesheets="@DarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="poker.app.view.PokerTableController">
+<AnchorPane fx:id="APMainScreen" prefHeight="600.0" prefWidth="1206.0" style="-fx-background-color: green;" stylesheets="@DarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="poker.app.view.PokerTableController">
    <children>
-      <BorderPane layoutX="-1.0" layoutY="-1.0" prefHeight="600.0" prefWidth="1000.0" style="-fx-background-color: green;">
+      <BorderPane layoutX="-1.0" layoutY="-1.0" prefHeight="600.0" prefWidth="1206.0" style="-fx-background-color: green;">
          <bottom>
             <AnchorPane prefHeight="107.0" prefWidth="800.0">
                <children>
-                  <HBox layoutX="350.0" layoutY="4.0" prefHeight="100.0" prefWidth="414.0">
+                  <HBox layoutX="396.0" layoutY="4.0" prefHeight="100.0" prefWidth="414.0">
                      <children>
                         <GridPane prefHeight="21.0" prefWidth="315.0">
                           <columnConstraints>
@@ -48,7 +48,7 @@
          <top>
             <AnchorPane prefHeight="107.0" prefWidth="800.0" BorderPane.alignment="CENTER">
                <children>
-                  <HBox layoutX="350.0" layoutY="4.0" prefHeight="100.0" prefWidth="414.0">
+                  <HBox layoutX="396.0" layoutY="4.0" prefHeight="100.0" prefWidth="414.0">
                      <children>
                         <GridPane prefHeight="21.0" prefWidth="315.0">
                            <columnConstraints>
@@ -126,13 +126,13 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <HBox layoutX="48.0" layoutY="199.0" prefHeight="173.0" prefWidth="339.0">
+                  <HBox layoutX="151.0" layoutY="199.0" prefHeight="173.0" prefWidth="339.0">
                      <children>
                         <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="173.0" prefWidth="338.0" style="-fx-background-color: green;">
                           <items>
                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" style="-fx-background-color: green;">
                                  <children>
-                                    <HBox layoutX="14.0" layoutY="10.0" prefHeight="68.0" prefWidth="317.0" style="-fx-background-color: green;" />
+                                    <HBox fx:id="HboxCommunityCards" layoutX="14.0" layoutY="10.0" prefHeight="68.0" prefWidth="317.0" style="-fx-background-color: green;" />
                                  </children></AnchorPane>
                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" style="-fx-background-color: green;">
                                  <children>

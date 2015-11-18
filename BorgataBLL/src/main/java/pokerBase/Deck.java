@@ -19,27 +19,48 @@ public class Deck extends DeckDomainModel {
 
 	public Deck() {
 
-		//	Create an ArrayList of Cards, add each card
+		// Create an ArrayList of Cards, add each card
 		ArrayList<CardDomainModel> MakingDeck = new ArrayList<CardDomainModel>();
 		for (short i = 0; i <= 3; i++) {
-			eSuit SuitValue = eSuit.values()[i];			
+			eSuit SuitValue = eSuit.values()[i];
 			for (short j = 0; j <= 12; j++) {
-				eRank RankValue = eRank.values()[j];				
-				Card NewCard = new Card(SuitValue,RankValue, (13 * i) + j+1);
+				eRank RankValue = eRank.values()[j];
+				Card NewCard = new Card(SuitValue, RankValue, (13 * i) + j + 1);
 				MakingDeck.add(NewCard);
 			}
 		}
-		//	Set the instance variable
+		// Set the instance variable
 		cards = MakingDeck;
 		ShuffleCards();
 
 	}
-	
 
-	
-	private void ShuffleCards()
-	{
-		//	Shuffle the cards
+	public Deck(int NbrOfJokers) {
+
+		this();
+
+		for (short i = 1; i <= NbrOfJokers; i++) {
+			cards.add(new Card(eSuit.JOKER, eRank.JOKER, 53));
+		}
+		ShuffleCards();
+	}
+
+	public Deck(int NbrOfJokers, ArrayList<CardDomainModel> WildCards) {
+
+		this(NbrOfJokers);
+
+		for (CardDomainModel deckCard : cards) {
+			for (CardDomainModel WildCard : WildCards) {
+				if ((deckCard.getSuit() == WildCard.getSuit()) && (deckCard.getRank() == WildCard.getRank())) {
+					deckCard.setWild();
+				}
+			}
+		}
+		ShuffleCards();
+	}
+
+	private void ShuffleCards() {
+		// Shuffle the cards
 		Collections.shuffle(cards);
 	}
 
@@ -54,29 +75,24 @@ public class Deck extends DeckDomainModel {
 		// Returns the total number of cards still in the deck
 		return cards.size();
 	}
-	
-	public ArrayList<CardDomainModel> getCards()
-	{
+
+	public ArrayList<CardDomainModel> getCards() {
 		return this.cards;
 	}
-	
-	public StringWriter SerializeMe()
-	{
-	    StringWriter sw = new StringWriter();
-		try
-		{
-		    //Write it
-		    JAXBContext ctx = JAXBContext.newInstance(Deck.class);
-		    Marshaller m = ctx.createMarshaller();
-		    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		    m.marshal(this, sw);
-		    sw.close();			
+
+	public StringWriter SerializeMe() {
+		StringWriter sw = new StringWriter();
+		try {
+			// Write it
+			JAXBContext ctx = JAXBContext.newInstance(Deck.class);
+			Marshaller m = ctx.createMarshaller();
+			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			m.marshal(this, sw);
+			sw.close();
+		} catch (Exception ex) {
+
 		}
-		catch (Exception ex)
-		{
-			
-		}
-    
-    return sw;
+
+		return sw;
 	}
 }

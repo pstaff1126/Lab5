@@ -63,10 +63,25 @@ public class GamePlay extends GamePlayDomainModel {
 	{
 		GameCommonHand.add(GPCH);
 	}
+
+	public GamePlayPlayerHand FindCommonHand(GamePlay gme)
+	{
+		GamePlayPlayerHand GPCH = null;
+		for (GamePlayPlayerHand GPPH: GameCommonHand)
+		{
+			if (GPPH.getGame().getGameID() == gme.getGameID())
+			{
+				GPCH = GPPH;
+			}
+		}		
+		return GPCH;
+	}
+	
 	public GamePlayPlayerHand FindPlayerGame(GamePlay gme, Player p)
 	{
 		GamePlayPlayerHand GPPHReturn = null;
 		
+	
 		for (GamePlayPlayerHand GPPH: GamePlayerHand)
 		{
 			if (p.getiPlayerPosition() == GPPH.getPlayer().getiPlayerPosition())
