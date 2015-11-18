@@ -44,8 +44,8 @@ import pokerBase.GamePlayPlayerHand;
 import pokerBase.Hand;
 import pokerBase.Player;
 import pokerBase.Rule;
+import pokerBase.Action;
 import pokerEnums.eDrawAction;
-import pokerEnums.eEvalType;
 
 public class PokerTableController {
 
@@ -144,30 +144,38 @@ public class PokerTableController {
 	}
 
 	@FXML
-	private void handleP1SitLeave() {
+	private void handleP1SitLeave() {		
 		int iPlayerPosition = 1;
-		handleSitLeave(bP1Sit, iPlayerPosition, lblP1Name, txtP1Name, btnP1SitLeave);
+		btnP1SitLeave.setDisable(true);
+		bP1Sit = handleSitLeave(bP1Sit, iPlayerPosition, lblP1Name, txtP1Name, btnP1SitLeave);
+		btnP1SitLeave.setDisable(false);
 	}
 
 	@FXML
 	private void handleP2SitLeave() {
 		int iPlayerPosition = 2;
-		handleSitLeave(bP1Sit, iPlayerPosition, lblP2Name, txtP2Name, btnP2SitLeave);
+		btnP2SitLeave.setDisable(true);
+		bP2Sit = handleSitLeave(bP2Sit, iPlayerPosition, lblP2Name, txtP2Name, btnP2SitLeave);
+		btnP2SitLeave.setDisable(false);
 	}
 
 	@FXML
 	private void handleP3SitLeave() {
 		int iPlayerPosition = 3;
-		handleSitLeave(bP1Sit, iPlayerPosition, lblP3Name, txtP3Name, btnP3SitLeave);
+		btnP3SitLeave.setDisable(true);
+		bP3Sit =handleSitLeave(bP3Sit, iPlayerPosition, lblP3Name, txtP3Name, btnP3SitLeave);
+		btnP3SitLeave.setDisable(false);
 	}
 
 	@FXML
 	private void handleP4SitLeave() {
 		int iPlayerPosition = 4;
-		handleSitLeave(bP1Sit, iPlayerPosition, lblP4Name, txtP4Name, btnP4SitLeave);
+		btnP4SitLeave.setDisable(true);
+		bP4Sit = handleSitLeave(bP4Sit, iPlayerPosition, lblP4Name, txtP4Name, btnP4SitLeave);
+		btnP4SitLeave.setDisable(false);
 	}
 
-	private void handleSitLeave(boolean bSit, int iPlayerPosition, Label lblPlayer, TextField txtPlayer,
+	private boolean handleSitLeave(boolean bSit, int iPlayerPosition, Label lblPlayer, TextField txtPlayer,
 			ToggleButton btnSitLeave) {
 		if (bSit == false) {
 			Player p = new Player(txtPlayer.getText(), iPlayerPosition);
@@ -184,6 +192,8 @@ public class PokerTableController {
 			lblPlayer.setVisible(false);
 			bSit = false;
 		}
+		
+		return bSit;
 	}
 
 	@FXML
@@ -196,7 +206,7 @@ public class PokerTableController {
 		hBoxP4Cards.getChildren().clear();
 
 		ImageView imgBottomCard = new ImageView(
-				new Image(getClass().getResourceAsStream("/res/img/b2fh.png"), 75, 75, true, true));
+				new Image(getClass().getResourceAsStream("/res/img/b1fh.png"), 75, 75, true, true));
 
 		HboxCommonArea.getChildren().clear();
 		HboxCommonArea.getChildren().add(imgBottomCard);
@@ -204,7 +214,7 @@ public class PokerTableController {
 		
 		
 		// Get the Rule, start the Game
-		Rule rle = new Rule(eGame.SuperOmaha);
+		Rule rle = new Rule(eGame.TexasHoldEm);
 		gme = new GamePlay(rle);
 
 		// Add the seated players to the game
@@ -272,66 +282,18 @@ public class PokerTableController {
 	@FXML
 	private void handleDraw() {
 		iCardDrawn++;
-		eDrawAction eDrawAction = null;
-		boolean bEvalHand = false;
-		eEvalType eEval = null;
 		ImageView imView = null;
 
 		// Disable the button in case of double-click
 		btnDraw.setDisable(true);
 
+		// Create the parent transition
 		SequentialTransition tranDealCards = new SequentialTransition();
-		
-		// Determine the iDrawAction (draw to player, draw to common
-		if ((gme.getRule().GetGame() == eGame.FiveStud) || (gme.getRule().GetGame() == eGame.AcesAndEights)
-				|| (gme.getRule().GetGame() == eGame.DeucesWild) || (gme.getRule().GetGame() == eGame.FiveStudOneJoker)
-				|| (gme.getRule().GetGame() == eGame.FiveStudTwoJoker)) {
-			eEval = eEvalType.Normal;
-			if ((iCardDrawn >= 1) && (iCardDrawn <= 5)) {
-				eDrawAction = eDrawAction.DrawPlayer;
-			} 
-			if (iCardDrawn == gme.getRule().getTotalCardsToDraw()) {
-				bEvalHand = true;
-			}
-		}
 
-		if ((gme.getRule().GetGame() == eGame.Omaha) ||(gme.getRule().GetGame() == eGame.SuperOmaha)) {
-			eEval = eEvalType.Omaha;
-			if ((iCardDrawn >= 1) && (iCardDrawn <= 4)) {
-				eDrawAction = eDrawAction.DrawPlayer;
-			}
-			if ((iCardDrawn > 4) && (iCardDrawn <= 9)) {
-				eDrawAction = eDrawAction.DrawCommon;
-			}
-			if (iCardDrawn == gme.getRule().getTotalCardsToDraw()) {
-				bEvalHand = true;
-			}
-		}
+		//	Figure the action based on the game, state of game
+		Action act = new Action(gme, iCardDrawn);
 
-		if ((gme.getRule().GetGame() == eGame.TexasHoldEm)) {
-			eEval = eEvalType.TexasHoldEm;
-			if ((iCardDrawn >= 1) && (iCardDrawn <= 2)) {
-				eDrawAction = eDrawAction.DrawPlayer;
-			}
-			if ((iCardDrawn > 2) && (iCardDrawn <= 7)) {
-				eDrawAction = eDrawAction.DrawCommon;
-			}
-			if (iCardDrawn == gme.getRule().getTotalCardsToDraw()) {
-				bEvalHand = true;
-			}
-		}
-
-		if ((gme.getRule().GetGame() == eGame.SevenDraw)) {
-			eEval = eEvalType.SevenCard;
-			if ((iCardDrawn >= 1) && (iCardDrawn <= 7)) {
-				eDrawAction = eDrawAction.DrawPlayer;
-			}
-			if (iCardDrawn == gme.getRule().getTotalCardsToDraw()) {
-				bEvalHand = true;
-			}
-		}
-
-		if (eDrawAction == eDrawAction.DrawPlayer) {
+		if (act.geteDrawAction() == eDrawAction.DrawPlayer) {
 			iCardDrawnPlayer++;			
 			// Draw a card for each player seated
 			for (Player p : mainApp.GetSeatedPlayers()) {
@@ -366,7 +328,7 @@ public class PokerTableController {
 				//tranDealCards.getChildren().add(FadeOutTransition(imView));
 			}
 
-		} else if (eDrawAction == eDrawAction.DrawCommon) {
+		} else if (act.geteDrawAction() == eDrawAction.DrawCommon) {
 			iCardDrawnCommon++;
 			imView = imgTransCardCommon;
 			Card c = gme.getGameDeck().drawFromDeck();
@@ -383,7 +345,7 @@ public class PokerTableController {
 		
 		
 		// If bEvalHand is true, it's time to evaluate the Hand...
-		if (bEvalHand) {
+		if (act.isbEvaluateHand()) {
 
 			ArrayList<GamePlayPlayerHand> AllPlayersHands = new ArrayList<GamePlayPlayerHand>();
 			ArrayList<Hand> BestPlayerHands = new ArrayList<Hand>();
@@ -457,7 +419,7 @@ public class PokerTableController {
 	private SequentialTransition createTransition(final Point2D pntStartPoint, final Point2D pntEndPoint, ImageView imView) {
 
 		imView = new ImageView(
-				new Image(getClass().getResourceAsStream("/res/img/b2fh.png"), 75, 75, true, true));
+				new Image(getClass().getResourceAsStream("/res/img/b1fh.png"), 75, 75, true, true));
 
 		imView.setX(pntStartPoint.getX());
 		imView.setY(pntStartPoint.getY() - 30);
