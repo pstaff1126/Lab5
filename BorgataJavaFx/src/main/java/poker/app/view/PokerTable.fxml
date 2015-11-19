@@ -42,6 +42,7 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </opaqueInsets>
                   </HBox>
+                  <Button fx:id="btnToggle" layoutX="35.0" layoutY="42.0" mnemonicParsing="false" onAction="#GetToggleGroup" text="Button" />
                </children>
             </AnchorPane>
          </bottom>

@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -34,12 +35,12 @@ import pokerBase.Table;
 public class MainApp extends Application {
 
 	private Stage primaryStage;
-	private BorderPane rootLayout;
-
-	
-	private Table tbl;
-	
+	private BorderPane rootLayout;	
+	private Table tbl;	
 	private int iGameType;
+	
+	RootLayoutController rootController = null;
+	
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -76,8 +77,8 @@ public class MainApp extends Application {
 			primaryStage.setScene(scene);
 
 			// Give the controller access to the main app.
-			RootLayoutController controller = loader.getController();
-			controller.setMainApp(this);
+			RootLayoutController rootController = loader.getController();
+			rootController.setMainApp(this);
 
 			primaryStage.show();
 		} catch (IOException e) {
@@ -141,5 +142,11 @@ public class MainApp extends Application {
 		this.iGameType = iGameType;
 	}
 	
-	
+	public ToggleGroup getToggleGroup()
+	{
+		ToggleGroup tgl = rootController.getTglGames();
+		return tgl;
+		
+
+	}
 }

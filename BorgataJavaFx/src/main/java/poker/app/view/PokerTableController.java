@@ -53,6 +53,9 @@ import pokerEnums.eGameState;
 
 public class PokerTableController {
 
+	@FXML
+	private Button btnToggle;
+	
 	boolean bPlay = false;
 
 	boolean bP1Sit = false;
@@ -549,4 +552,10 @@ public class PokerTableController {
 
 	}
 
+    @FXML
+    private void GetToggleGroup() {
+
+    	mainApp.getToggleGroup();
+    	
+    }
 }

@@ -13,6 +13,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
 import poker.app.MainApp;
 
@@ -31,6 +32,8 @@ public class RootLayoutController implements Initializable {
     @FXML
     private Menu mnuGame;
     
+    @FXML
+    private ToggleGroup tglGames;
     
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -128,6 +131,16 @@ public class RootLayoutController implements Initializable {
     @FXML
     private void handleShowBirthdayStatistics() {
     }
+
+
+	public ToggleGroup getTglGames() {
+		return tglGames;
+	}
+
+
+	public void setTglGames(ToggleGroup tglGames) {
+		this.tglGames = tglGames;
+	}
 
 
 
