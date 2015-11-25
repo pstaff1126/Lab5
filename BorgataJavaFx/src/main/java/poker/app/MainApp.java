@@ -3,11 +3,16 @@ package poker.app;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 
+import pokerBase.GamePlay;
+import pokerBase.GamePlayPlayerHand;
+import enums.eCardNo;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -26,9 +31,11 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import poker.app.view.PokerTableController;
 import poker.app.view.RootLayoutController;
+import pokerBase.Hand;
 import pokerBase.Player;
 import pokerBase.Table;
 
@@ -55,10 +62,13 @@ public class MainApp extends Application {
 
 		// Set the application icon.
 		this.primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/res/img/26.png")));
+		scene.setFill(null);
 
 		this.primaryStage.setScene(scene);
 		this.primaryStage.show();
-
+		 Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();
+	        primaryStage.setX(primaryStage.getX() + primaryStage.getWidth()/4  - primScreenBounds.getWidth() /4);
+	        primaryStage.setY(primaryStage.getY() + primaryStage.getHeight()/20  - primScreenBounds.getHeight() /20); 
 		initRootLayout();
 
 		showPokerTable();
@@ -148,5 +158,11 @@ public class MainApp extends Application {
 		return tgl;
 		
 
+	}
+	public void showWinner(GamePlayPlayerHand a) {
+		a.getWinningPlayer();
+		this.primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/res/img/winner-winner.png")));
+		showPokerTable();
+		
 	}
 }

@@ -38,8 +38,8 @@ public class RootLayoutController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 
-	 
-/*		CheckMenuItem item1 = new CheckMenuItem("5 card stud");
+	 /*
+		CheckMenuItem item1 = new CheckMenuItem("5 card stud");
         item1.selectedProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue arg0, Object arg1, Object arg2) {
@@ -61,7 +61,7 @@ public class RootLayoutController implements Initializable {
           });
 		
 		
-		mnuGame.getItems().add(item2);*/
+		mnuGame.getItems().add(item2); */
 		
 		
 	}
